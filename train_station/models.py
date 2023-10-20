@@ -29,10 +29,10 @@ class TrainType(models.Model):
 
 class Route(models.Model):
     source = models.ForeignKey(
-        Station, on_delete=models.CASCADE, related_name="routes"
+        Station, on_delete=models.CASCADE, related_name="source_routes"
     )
     destination = models.ForeignKey(
-        Station, on_delete=models.CASCADE, related_name="routes"
+        Station, on_delete=models.CASCADE, related_name="destination_routes"
     )
     distance = models.PositiveIntegerField()
 
@@ -54,11 +54,11 @@ class Train(models.Model):
 
 class Order(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
-    user = models.ForeignKey(
-        to=settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name="orders",
-    )
+    # user = models.ForeignKey(
+    #     to=settings.AUTH_USER_MODEL,
+    #     on_delete=models.CASCADE,
+    #     related_name="orders",
+    # )
 
 
 class Journey(models.Model):
