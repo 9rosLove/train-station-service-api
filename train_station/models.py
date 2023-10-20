@@ -4,7 +4,7 @@ from train_station_service import settings
 
 
 class Station(models.Model):
-    name = models.CharField(max_length=31)
+    name = models.CharField(max_length=31, unique=True)
     latitude = models.FloatField()
     longitude = models.FloatField()
 
