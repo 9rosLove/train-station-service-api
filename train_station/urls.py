@@ -1,6 +1,12 @@
 from rest_framework.routers import SimpleRouter
 
-from train_station.views import CrewViewSet, TrainTypeViewSet, StationViewSet, TrainViewSet, RouteViewSet
+from train_station.views import (
+    CrewViewSet,
+    TrainTypeViewSet,
+    StationViewSet,
+    TrainViewSet,
+    RouteViewSet,
+)
 
 router = SimpleRouter()
 
