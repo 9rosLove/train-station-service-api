@@ -43,7 +43,7 @@ class Route(models.Model):
 class Train(models.Model):
     name = models.CharField(max_length=31)
     cargo_number = models.PositiveIntegerField()
-    places_int_cargo = models.PositiveIntegerField()
+    places_in_cargo = models.PositiveIntegerField()
     train_type = models.ForeignKey(
         TrainType, on_delete=models.CASCADE, related_name="trains"
     )
