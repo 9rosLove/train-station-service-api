@@ -1,5 +1,8 @@
 from django.db.models import Count, F
 from rest_framework import viewsets, mixins
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.mixins import CreateModelMixin
+from rest_framework.permissions import IsAuthenticated
 
 from train_station.models import (
     Crew,
@@ -10,6 +13,7 @@ from train_station.models import (
     Order,
     Journey,
 )
+from train_station.permissions import IsAdminOrIfAuthenticatedReadOnly
 from train_station.serializers import (
     CrewSerializer,
     StationSerializer,
@@ -28,24 +32,48 @@ from train_station.serializers import (
 )
 
 
-class StationViewSet(viewsets.ModelViewSet):
+class StationViewSet(
+    mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
+    CreateModelMixin,
+    viewsets.GenericViewSet
+):
     queryset = Station.objects.all()
     serializer_class = StationSerializer
+    authentication_classes = (TokenAuthentication,)
+    permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 
 
 class CrewViewSet(viewsets.ModelViewSet):
     queryset = Crew.objects.all()
     serializer_class = CrewSerializer
+    authentication_classes = (TokenAuthentication,)
+    permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 
 
-class TrainTypeViewSet(viewsets.ModelViewSet):
+class TrainTypeViewSet(
+    mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
+    CreateModelMixin,
+    mixins.UpdateModelMixin,
+    viewsets.GenericViewSet
+):
     queryset = TrainType.objects.all()
     serializer_class = TrainTypeSerializer
+    authentication_classes = (TokenAuthentication,)
+    permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 
 
-class RouteViewSet(viewsets.ModelViewSet):
+class RouteViewSet(
+    mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.CreateModelMixin,
+    viewsets.GenericViewSet
+):
     queryset = Route.objects.all()
     serializer_class = RouteSerializer
+    authentication_classes = (TokenAuthentication,)
+    permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 
     def get_serializer_class(self):
         if self.action == "list":
@@ -60,6 +88,8 @@ class RouteViewSet(viewsets.ModelViewSet):
 class TrainViewSet(viewsets.ModelViewSet):
     queryset = Train.objects.all()
     serializer_class = TrainSerializer
+    authentication_classes = (TokenAuthentication,)
+    permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 
     def get_serializer_class(self):
         if self.action in ("list", "retrieve"):
@@ -79,6 +109,8 @@ class JourneyViewSet(viewsets.ModelViewSet):
         )
     )
     serializer_class = JourneySerializer
+    authentication_classes = (TokenAuthentication,)
+    permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 
     def get_serializer_class(self):
         if self.action == "list":
@@ -98,6 +130,8 @@ class OrderViewSet(
 ):
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
+    authentication_classes = (TokenAuthentication,)
+    permission_classes = (IsAuthenticated,)
 
     def get_serializer_class(self):
         if self.action == "list":
