@@ -5,7 +5,7 @@ from train_station.views import (
     TrainTypeViewSet,
     StationViewSet,
     TrainViewSet,
-    RouteViewSet,
+    RouteViewSet, JourneyViewSet, OrderViewSet,
 )
 
 router = SimpleRouter()
@@ -15,6 +15,8 @@ router.register("crew", CrewViewSet)
 router.register("train_types", TrainTypeViewSet)
 router.register("routes", RouteViewSet)
 router.register("trains", TrainViewSet)
+router.register("journeys", JourneyViewSet)
+router.register("orders", OrderViewSet)
 
 urlpatterns = router.urls
 

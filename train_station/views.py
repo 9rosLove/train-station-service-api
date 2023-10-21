@@ -1,5 +1,5 @@
 from django.db.models import Count, F
-from rest_framework import viewsets
+from rest_framework import viewsets, mixins
 
 from train_station.models import (
     Crew,
@@ -90,7 +90,12 @@ class JourneyViewSet(viewsets.ModelViewSet):
         return self.serializer_class
 
 
-class OrderViewSet(viewsets.ModelViewSet):
+class OrderViewSet(
+    mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.CreateModelMixin,
+    viewsets.GenericViewSet
+):
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
 
