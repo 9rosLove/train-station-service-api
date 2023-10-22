@@ -85,9 +85,29 @@ class JourneyListSerializer(JourneySerializer):
     )
 
 
+class TicketSeatsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Ticket
+        fields = ("cargo", "seat")
+
+
 class JourneyDetailSerializer(JourneyListSerializer):
     route = RouteListSerializer()
     train = TrainListRetrieveSerializer()
+    taken_seats = TicketSeatsSerializer(
+        source="tickets", many=True, read_only=True)
+
+    class Meta:
+        model = Journey
+        fields = (
+            "id",
+            "route",
+            "train",
+            "departure_time",
+            "arrival_time",
+            "crew",
+            "taken_seats",
+        )
 
 
 class TicketSerializer(serializers.ModelSerializer):
