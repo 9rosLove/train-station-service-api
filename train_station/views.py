@@ -80,6 +80,9 @@ class StationViewSet(
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+
 
 class CrewViewSet(viewsets.ModelViewSet):
     queryset = Crew.objects.all()
@@ -189,20 +192,26 @@ class JourneyViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(route__source__name__icontains=source)
 
         if destination:
-            queryset = queryset.filter(route__destination__name__icontains=destination)
+            queryset = queryset.filter(
+                route__destination__name__icontains=destination
+            )
 
         if departure_date:
             try:
-                date = datetime.strptime(departure_date, '%Y-%m-%d').date()
+                date = datetime.strptime(departure_date, "%Y-%m-%d").date()
             except ValueError:
-                raise ParseError(detail='Invalid date format. Please use YYYY-MM-DD.')
+                raise ParseError(
+                    detail="Invalid date format. Please use YYYY-MM-DD."
+                )
             queryset = queryset.filter(departure_time__date=date)
             print(date)
             if departure_time:
                 try:
-                    time = datetime.strptime(departure_time, '%H:%M').time()
+                    time = datetime.strptime(departure_time, "%H:%M").time()
                 except ValueError:
-                    raise ParseError(detail='Invalid time format. Please use HH:MM.')
+                    raise ParseError(
+                        detail="Invalid time format. Please use HH:MM."
+                    )
                 queryset = queryset.filter(departure_time__time=time)
 
         return queryset.distinct()
@@ -237,7 +246,7 @@ class JourneyViewSet(viewsets.ModelViewSet):
                 "time",
                 description="Filter by time",
                 type=OpenApiTypes.TIME,
-            )
+            ),
         ]
     )
     def list(self, request, *args, **kwargs):
@@ -263,16 +272,24 @@ class OrderViewSet(
 
         if departure_date:
             try:
-                date = datetime.strptime(departure_date, '%Y-%m-%d').date()
-                queryset = queryset.filter(tickets_journey__departure_time__date=date)
+                date = datetime.strptime(departure_date, "%Y-%m-%d").date()
+                queryset = queryset.filter(
+                    tickets_journey__departure_time__date=date
+                )
             except ValueError:
-                raise ParseError(detail='Invalid date format. Please use YYYY-MM-DD.')
+                raise ParseError(
+                    detail="Invalid date format. Please use YYYY-MM-DD."
+                )
             if departure_time:
                 try:
-                    time = datetime.strptime(departure_time, '%H:%M').time()
-                    queryset = queryset.filter(tickets__journey__departure_time__time=time)
+                    time = datetime.strptime(departure_time, "%H:%M").time()
+                    queryset = queryset.filter(
+                        tickets__journey__departure_time__time=time
+                    )
                 except ValueError:
-                    raise ParseError(detail='Invalid time format. Please use HH:MM.')
+                    raise ParseError(
+                        detail="Invalid time format. Please use HH:MM."
+                    )
 
         return queryset
 
@@ -299,7 +316,7 @@ class OrderViewSet(
                 "time",
                 description="Filter by time",
                 type=OpenApiTypes.TIME,
-            )
+            ),
         ]
     )
     def list(self, request, *args, **kwargs):

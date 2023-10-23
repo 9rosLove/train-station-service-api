@@ -1,6 +1,8 @@
 from django.db import transaction
+from geopy import Nominatim
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
+from rest_framework.fields import CharField
 
 from train_station.models import (
     Crew,
@@ -11,13 +13,42 @@ from train_station.models import (
     Journey,
     Ticket,
     Order,
+    Address,
 )
 
 
 class StationSerializer(serializers.ModelSerializer):
+    address = CharField(source="address.__str__", read_only=True)
+
+    def get_address(self, validated_data):
+        geolocator = Nominatim(user_agent="train_station")
+        latitude = self.validated_data["latitude"]
+        longitude = self.validated_data["longitude"]
+        location_info = geolocator.reverse(f"{latitude},{longitude}")
+        address = dict()
+
+        if location_info:
+            address_raw = location_info.raw["address"]
+            address["country"] = address_raw.get("country")
+            address["city"] = address_raw.get("city")
+            if not address["city"]:
+                if "town" in address_raw:
+                    address["city"] = address_raw["town"]
+                elif "village" in address_raw:
+                    address["city"] = address_raw["village"]
+
+            return address
+
+    def create(self, validated_data):
+        address = self.get_address(validated_data)
+        r_address = Address.objects.create(**address)
+        station = Station.objects.create(**validated_data, address=r_address)
+
+        return station
+
     class Meta:
         model = Station
-        fields = ("id", "name", "latitude", "longitude")
+        fields = ("id", "name", "latitude", "longitude", "address")
 
 
 class StationImageSerializer(serializers.ModelSerializer):
@@ -108,6 +139,12 @@ class JourneySerializer(serializers.ModelSerializer):
         data = super(JourneySerializer, self).validate(attrs)
         Journey.validate_time(
             attrs["departure_time"], attrs["arrival_time"], ValidationError
+        )
+        Journey.validate_train(
+            attrs["train"],
+            attrs["departure_time"],
+            attrs["arrival_time"],
+            ValidationError,
         )
 
         return data

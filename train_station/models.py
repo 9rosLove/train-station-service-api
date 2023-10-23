@@ -11,6 +11,18 @@ from geopy.distance import geodesic
 from train_station_service import settings
 
 
+class Address(models.Model):
+    country = models.CharField(max_length=31, null=True)
+    city = models.CharField(max_length=31, null=True)
+
+    def __str__(self):
+        address_components = [self.country, self.city]
+        address_string = ", ".join(filter(None, address_components))
+        if address_string:
+            return address_string
+        return "Unknown address"
+
+
 def station_image_file_path(instance, filename):
     _, extension = os.path.splitext(filename)
     filename = f"{slugify(instance.name)}-{uuid.uuid4()}{extension}"
@@ -37,6 +49,10 @@ class Station(models.Model):
             ),
             MaxValueValidator(180.0, message="Longitude must be at most 180."),
         ],
+    )
+    address = models.OneToOneField(
+        to=Address,
+        on_delete=models.CASCADE,
     )
 
     image = models.ImageField(upload_to=station_image_file_path, null=True)
@@ -166,9 +182,24 @@ class Journey(models.Model):
                 }
             )
 
+    @staticmethod
+    def validate_train(train, departure_time, arrival_time, error_to_raise):
+        train_journeys = Journey.objects.filter(
+            train=train,
+            departure_time__lte=arrival_time,
+            arrival_time__gte=departure_time,
+        )
+        if train_journeys.exists():
+            raise error_to_raise(
+                {"train": f"Train {train} is already on this route."}
+            )
+
     def clean(self):
         Journey.validate_time(
             self.departure_time, self.arrival_time, ValidationError
+        )
+        Journey.validate_train(
+            self.train, self.departure_time, self.arrival_time, ValidationError
         )
 
     def __str__(self):
