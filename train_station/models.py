@@ -1,10 +1,21 @@
+import os
+import uuid
+
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 from django.utils import timezone
+from django.utils.text import slugify
 from geopy.distance import geodesic
 
 from train_station_service import settings
+
+
+def station_image_file_path(instance, filename):
+    _, extension = os.path.splitext(filename)
+    filename = f"{slugify(instance.name)}-{uuid.uuid4()}{extension}"
+
+    return os.path.join("uploads/stations/", filename)
 
 
 class Station(models.Model):
@@ -27,6 +38,8 @@ class Station(models.Model):
             MaxValueValidator(180.0, message="Longitude must be at most 180."),
         ],
     )
+
+    image = models.ImageField(upload_to=station_image_file_path, null=True)
 
     class Meta:
         unique_together = ("name", "latitude", "longitude")

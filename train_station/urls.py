@@ -1,14 +1,16 @@
-from rest_framework.routers import SimpleRouter
+from rest_framework.routers import DefaultRouter
 
 from train_station.views import (
     CrewViewSet,
     TrainTypeViewSet,
     StationViewSet,
     TrainViewSet,
-    RouteViewSet, JourneyViewSet, OrderViewSet,
+    RouteViewSet,
+    JourneyViewSet,
+    OrderViewSet,
 )
 
-router = SimpleRouter()
+router = DefaultRouter()
 
 router.register("stations", StationViewSet)
 router.register("crew", CrewViewSet)

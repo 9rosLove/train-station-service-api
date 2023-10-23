@@ -2,13 +2,28 @@ from django.db import transaction
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
-from train_station.models import Crew, Station, TrainType, Train, Route, Journey, Ticket, Order
+from train_station.models import (
+    Crew,
+    Station,
+    TrainType,
+    Train,
+    Route,
+    Journey,
+    Ticket,
+    Order,
+)
 
 
 class StationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Station
-        fields = "__all__"
+        fields = ("id", "name", "latitude", "longitude")
+
+
+class StationImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Station
+        fields = ("image",)
 
 
 class CrewSerializer(serializers.ModelSerializer):
@@ -26,7 +41,9 @@ class TrainTypeSerializer(serializers.ModelSerializer):
 class RouteSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         data = super(RouteSerializer, self).validate(attrs)
-        Route.validate_station(data["source"], data["destination"], ValidationError)
+        Route.validate_station(
+            data["source"], data["destination"], ValidationError
+        )
         return data
 
     class Meta:
@@ -35,8 +52,12 @@ class RouteSerializer(serializers.ModelSerializer):
 
 
 class RouteListSerializer(RouteSerializer):
-    source = serializers.SlugRelatedField(slug_field="name", queryset=Station.objects.all())
-    destination = serializers.SlugRelatedField(slug_field="name", queryset=Station.objects.all())
+    source = serializers.SlugRelatedField(
+        slug_field="name", queryset=Station.objects.all()
+    )
+    destination = serializers.SlugRelatedField(
+        slug_field="name", queryset=Station.objects.all()
+    )
 
 
 class RouteDetailSerializer(RouteSerializer):
@@ -52,7 +73,14 @@ class TrainSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Train
-        fields = ("id", "name", "cargo_number", "places_in_cargo", "train_type", "capacity")
+        fields = (
+            "id",
+            "name",
+            "cargo_number",
+            "places_in_cargo",
+            "train_type",
+            "capacity",
+        )
 
 
 class TrainListRetrieveSerializer(TrainSerializer):
@@ -66,11 +94,21 @@ class JourneySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Journey
-        fields = ("id",  "departure_time", "arrival_time", "route", "train", "tickets_available", "crew")
+        fields = (
+            "id",
+            "departure_time",
+            "arrival_time",
+            "route",
+            "train",
+            "tickets_available",
+            "crew",
+        )
 
     def validate(self, attrs):
         data = super(JourneySerializer, self).validate(attrs)
-        Journey.validate_time(attrs["departure_time"], attrs["arrival_time"], ValidationError)
+        Journey.validate_time(
+            attrs["departure_time"], attrs["arrival_time"], ValidationError
+        )
 
         return data
 
@@ -95,7 +133,8 @@ class JourneyDetailSerializer(JourneyListSerializer):
     route = RouteListSerializer()
     train = TrainListRetrieveSerializer()
     taken_seats = TicketSeatsSerializer(
-        source="tickets", many=True, read_only=True)
+        source="tickets", many=True, read_only=True
+    )
 
     class Meta:
         model = Journey
@@ -113,8 +152,16 @@ class JourneyDetailSerializer(JourneyListSerializer):
 class TicketSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         data = super(TicketSerializer, self).validate(attrs)
-        Ticket.validate_seat(attrs["seat"], attrs["journey"].train.places_in_cargo, ValidationError)
-        Ticket.validate_cargo(attrs["cargo"], attrs["journey"].train.cargo_number, ValidationError)
+        Ticket.validate_seat(
+            attrs["seat"],
+            attrs["journey"].train.places_in_cargo,
+            ValidationError,
+        )
+        Ticket.validate_cargo(
+            attrs["cargo"],
+            attrs["journey"].train.cargo_number,
+            ValidationError,
+        )
 
         return data
 
