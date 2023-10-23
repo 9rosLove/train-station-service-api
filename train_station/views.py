@@ -1,6 +1,9 @@
+from datetime import datetime
+
 from django.db.models import Count, F
 from rest_framework import viewsets, mixins, status
 from rest_framework.decorators import action
+from rest_framework.exceptions import ParseError
 from rest_framework.mixins import CreateModelMixin
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
@@ -123,9 +126,20 @@ class TrainViewSet(viewsets.ModelViewSet):
     pagination_class = TrainPagination
     permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 
+    def get_queryset(self):
+        queryset = self.queryset
+
+        train_type = self.request.query_params.get("train_type", None)
+
+        if train_type:
+            queryset = queryset.filter(train_type__name__icontains=train_type)
+
+        return queryset
+
     def get_serializer_class(self):
         if self.action in ("list", "retrieve"):
             return TrainListRetrieveSerializer
+
         return self.serializer_class
 
 
@@ -143,6 +157,35 @@ class JourneyViewSet(viewsets.ModelViewSet):
     serializer_class = JourneySerializer
     pagination_class = JourneyPagination
     permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
+
+    def get_queryset(self):
+        queryset = self.queryset
+
+        source = self.request.query_params.get("source", None)
+        destination = self.request.query_params.get("destination", None)
+        departure_date = self.request.query_params.get("date", None)
+        departure_time = self.request.query_params.get("time", None)
+
+        if source:
+            queryset = queryset.filter(route__source__name__icontains=source)
+
+        if destination:
+            queryset = queryset.filter(route__destination__name__icontains=destination)
+
+        if departure_date:
+            try:
+                date = datetime.strptime(departure_date, '%Y-%m-%d').date()
+            except ValueError:
+                raise ParseError(detail='Invalid date format. Please use YYYY-MM-DD.')
+            queryset = queryset.filter(tickets__journey__arrival_time__date=date)
+            if departure_time:
+                try:
+                    time = datetime.strptime(departure_time, '%H:%M').time()
+                except ValueError:
+                    raise ParseError(detail='Invalid time format. Please use HH:MM.')
+                queryset = queryset.filter(tickets__journey__arrival_time__time=time)
+
+        return queryset.distinct()
 
     def get_serializer_class(self):
         if self.action == "list":
@@ -165,6 +208,27 @@ class OrderViewSet(
     pagination_class = OrderPagination
     permission_classes = (IsAuthenticated,)
 
+    def get_queryset(self):
+        queryset = self.queryset.filter(user=self.request.user)
+
+        departure_date = self.request.query_params.get("date", None)
+        departure_time = self.request.query_params.get("time", None)
+
+        if departure_date:
+            try:
+                date = datetime.strptime(departure_date, '%Y-%m-%d').date()
+                queryset = queryset.filter(tickets__journey__departure_time__date=date)
+            except ValueError:
+                raise ParseError(detail='Invalid date format. Please use YYYY-MM-DD.')
+            if departure_time:
+                try:
+                    time = datetime.strptime(departure_time, '%H:%M').time()
+                    queryset = queryset.filter(tickets__journey__departure_time__time=time)
+                except ValueError:
+                    raise ParseError(detail='Invalid time format. Please use HH:MM.')
+
+        return queryset
+
     def get_serializer_class(self):
         if self.action == "list":
             return OrderListSerializer
@@ -173,9 +237,6 @@ class OrderViewSet(
             return OrderDetailSerializer
 
         return self.serializer_class
-
-    def get_queryset(self):
-        return Order.objects.filter(user=self.request.user)
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
