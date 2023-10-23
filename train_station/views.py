@@ -1,6 +1,8 @@
 from datetime import datetime
 
 from django.db.models import Count, F
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import extend_schema, OpenApiParameter
 from rest_framework import viewsets, mixins, status
 from rest_framework.decorators import action
 from rest_framework.exceptions import ParseError
@@ -126,13 +128,18 @@ class TrainViewSet(viewsets.ModelViewSet):
     pagination_class = TrainPagination
     permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 
+    @staticmethod
+    def _params_to_ints(qs):
+        return [int(str_id) for str_id in qs.split(",")]
+
     def get_queryset(self):
         queryset = self.queryset
 
         train_type = self.request.query_params.get("train_type", None)
 
         if train_type:
-            queryset = queryset.filter(train_type__name__icontains=train_type)
+            train_type_ids = self._params_to_ints(train_type)
+            queryset = queryset.filter(train_type__id__in=train_type_ids)
 
         return queryset
 
@@ -141,6 +148,18 @@ class TrainViewSet(viewsets.ModelViewSet):
             return TrainListRetrieveSerializer
 
         return self.serializer_class
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                "train_type",
+                description="Filter by train type",
+                type=OpenApiTypes.STR,
+            )
+        ]
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(self, request, *args, **kwargs)
 
 
 class JourneyViewSet(viewsets.ModelViewSet):
@@ -196,6 +215,33 @@ class JourneyViewSet(viewsets.ModelViewSet):
 
         return self.serializer_class
 
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                "source",
+                description="Filter by source",
+                type=OpenApiTypes.STR,
+            ),
+            OpenApiParameter(
+                "destination",
+                description="Filter by destination",
+                type=OpenApiTypes.STR,
+            ),
+            OpenApiParameter(
+                "date",
+                description="Filter by date",
+                type=OpenApiTypes.DATE,
+            ),
+            OpenApiParameter(
+                "time",
+                description="Filter by time",
+                type=OpenApiTypes.TIME,
+            )
+        ]
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(self, request, *args, **kwargs)
+
 
 class OrderViewSet(
     mixins.ListModelMixin,
@@ -240,3 +286,20 @@ class OrderViewSet(
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                "date",
+                description="Filter by date",
+                type=OpenApiTypes.DATE,
+            ),
+            OpenApiParameter(
+                "time",
+                description="Filter by time",
+                type=OpenApiTypes.TIME,
+            )
+        ]
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(self, request, *args, **kwargs)
