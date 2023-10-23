@@ -196,13 +196,14 @@ class JourneyViewSet(viewsets.ModelViewSet):
                 date = datetime.strptime(departure_date, '%Y-%m-%d').date()
             except ValueError:
                 raise ParseError(detail='Invalid date format. Please use YYYY-MM-DD.')
-            queryset = queryset.filter(tickets__journey__arrival_time__date=date)
+            queryset = queryset.filter(departure_time__date=date)
+            print(date)
             if departure_time:
                 try:
                     time = datetime.strptime(departure_time, '%H:%M').time()
                 except ValueError:
                     raise ParseError(detail='Invalid time format. Please use HH:MM.')
-                queryset = queryset.filter(tickets__journey__arrival_time__time=time)
+                queryset = queryset.filter(departure_time__time=time)
 
         return queryset.distinct()
 
@@ -263,7 +264,7 @@ class OrderViewSet(
         if departure_date:
             try:
                 date = datetime.strptime(departure_date, '%Y-%m-%d').date()
-                queryset = queryset.filter(tickets__journey__departure_time__date=date)
+                queryset = queryset.filter(tickets_journey__departure_time__date=date)
             except ValueError:
                 raise ParseError(detail='Invalid date format. Please use YYYY-MM-DD.')
             if departure_time:
