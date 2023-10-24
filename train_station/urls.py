@@ -14,11 +14,12 @@ router = DefaultRouter()
 
 router.register("stations", StationViewSet)
 router.register("crew", CrewViewSet)
-router.register("train_types", TrainTypeViewSet)
+router.register("train-types", TrainTypeViewSet)
 router.register("routes", RouteViewSet)
 router.register("trains", TrainViewSet)
 router.register("journeys", JourneyViewSet)
 router.register("orders", OrderViewSet)
+
 
 urlpatterns = router.urls
 

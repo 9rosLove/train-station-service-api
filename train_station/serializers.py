@@ -97,11 +97,6 @@ class RouteDetailSerializer(RouteSerializer):
 
 
 class TrainSerializer(serializers.ModelSerializer):
-    def validate(self, attrs):
-        data = super(TrainSerializer, self).validate(attrs)
-        Train.validate_name(data["name"], ValidationError)
-        return data
-
     class Meta:
         model = Train
         fields = (
@@ -112,6 +107,12 @@ class TrainSerializer(serializers.ModelSerializer):
             "train_type",
             "capacity",
         )
+
+    def validate(self, attrs):
+        data = super(TrainSerializer, self).validate(attrs)
+        Train.validate_name(data["name"], ValidationError)
+
+        return data
 
 
 class TrainListRetrieveSerializer(TrainSerializer):

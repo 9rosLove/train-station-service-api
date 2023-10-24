@@ -1,19 +1,58 @@
 from django.urls import reverse
 
-from train_station.models import TrainType, Train, Crew, Station, Address, Route, Ticket, Order, Journey
+from train_station.models import (
+    TrainType,
+    Train,
+    Crew,
+    Station,
+    Address,
+    Route,
+    Ticket,
+    Order,
+    Journey,
+)
 
 CREW_URL = reverse("train_station:crew-list")
 STATION_URL = reverse("train_station:station-list")
+TRAIN_TYPE_URL = reverse("train_station:traintype-list")
 TRAIN_URL = reverse("train_station:train-list")
 ROUTE_URL = reverse("train_station:route-list")
 JOURNEY_URL = reverse("train_station:journey-list")
 ORDER_URL = reverse("train_station:order-list")
 
 
+def detail_crew_url(crew_id):
+    return reverse("train_station:crew-detail", args=[crew_id])
+
+
+def detail_train_url(train_id):
+    return reverse("train_station:train-detail", args=[train_id])
+
+
+def detail_train_type_url(train_type_id):
+    return reverse("train_station:train-type-detail", args=[train_type_id])
+
+
+def detail_route_url(route_id):
+    return reverse("train_station:route-detail", args=[route_id])
+
+
+def detail_station_url(station_id):
+    return reverse("train_station:station-detail", args=[station_id])
+
+
+def detail_journey_url(journey_id):
+    return reverse("train_station:journey-detail", args=[journey_id])
+
+
+def detail_order_url(order_id):
+    return reverse("train_station:order-detail", args=[order_id])
+
+
 def sample_crew(**params):
     defaults = {
-        "first_name": "John",
-        "last_name": "Doe",
+        "first_name": "Fred",
+        "last_name": "Flintstone",
     }
     defaults.update(params)
 
@@ -32,27 +71,34 @@ def sample_station(**params):
     return Station.objects.create(**params)
 
 
-def sample_train(**params):
+def sample_train_type(**params):
     defaults = {
-        "name": "JGY04958",
-        "train_type": TrainType.objects.first(),
+        "name": "TestTrainType",
     }
     defaults.update(params)
 
-    return Train.objects.create(**params)
-
-
-def sample_train_type(**params):
-    defaults = {
-        "name": "cargo",
-    }
     return TrainType.objects.create(**params)
+
+
+def sample_train(**params):
+    pass
+
+
+#     defaults = {
+#         "name": "JGY04958",
+#         "cargo_number": 55,
+#         "places_in_cargo": 5,
+#         "train_type": sample_train_type(),
+#     }
+#     defaults.update(params)
+#
+#     return Train.objects.create(**params)
 
 
 def sample_address(**params):
     defaults = {
-        "country": "Belgium",
-        "city": "Brussels",
+        "country": "TestCountry",
+        "city": "TestCity",
     }
     defaults.update(params)
 
@@ -61,8 +107,12 @@ def sample_address(**params):
 
 def sample_route(**params):
     defaults = {
-        "source": sample_station(name="Hamburg"),
-        "destination": sample_station(name="Berlin"),
+        "source": sample_station(
+            name="TestSource", latitude=51.5, longitude=-0.13
+        ),
+        "destination": Station.objects.create(
+            name="TestDestination", latitude=52.5, longitude=13.4
+        ),
     }
     defaults.update(params)
 

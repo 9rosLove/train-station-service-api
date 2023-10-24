@@ -93,7 +93,6 @@ class CrewViewSet(viewsets.ModelViewSet):
 
 class TrainTypeViewSet(
     mixins.ListModelMixin,
-    mixins.RetrieveModelMixin,
     CreateModelMixin,
     mixins.UpdateModelMixin,
     viewsets.GenericViewSet,
