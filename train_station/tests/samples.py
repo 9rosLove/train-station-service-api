@@ -2,14 +2,10 @@ from django.urls import reverse
 
 from train_station.models import (
     TrainType,
-    Train,
     Crew,
     Station,
     Address,
     Route,
-    Ticket,
-    Order,
-    Journey,
 )
 
 CREW_URL = reverse("train_station:crew-list")
@@ -78,21 +74,6 @@ def sample_train_type(**params):
     defaults.update(params)
 
     return TrainType.objects.create(**params)
-
-
-def sample_train(**params):
-    pass
-
-
-#     defaults = {
-#         "name": "JGY04958",
-#         "cargo_number": 55,
-#         "places_in_cargo": 5,
-#         "train_type": sample_train_type(),
-#     }
-#     defaults.update(params)
-#
-#     return Train.objects.create(**params)
 
 
 def sample_address(**params):
