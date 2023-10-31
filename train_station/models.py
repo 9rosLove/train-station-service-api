@@ -50,7 +50,7 @@ class Station(models.Model):
             MaxValueValidator(180.0, message="Longitude must be at most 180."),
         ],
     )
-    address = models.OneToOneField(
+    address = models.ForeignKey(
         to=Address,
         on_delete=models.CASCADE,
     )

@@ -41,9 +41,12 @@ class StationSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         address = self.get_address(validated_data)
-        r_address = Address.objects.create(**address)
-        station = Station.objects.create(**validated_data, address=r_address)
+        r_address = Address.objects.filter(**address).first()
 
+        if not r_address:
+            r_address = Address.objects.create(**address)
+
+        station = Station.objects.create(**validated_data, address=r_address)
         return station
 
     class Meta:
