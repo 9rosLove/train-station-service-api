@@ -203,7 +203,6 @@ class JourneyViewSet(viewsets.ModelViewSet):
                     detail="Invalid date format. Please use YYYY-MM-DD."
                 )
             queryset = queryset.filter(departure_time__date=date)
-            print(date)
             if departure_time:
                 try:
                     time = datetime.strptime(departure_time, "%H:%M").time()
